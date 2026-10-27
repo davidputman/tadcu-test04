@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TADCU — Episode 4: The Wall</title>
+<style>
+/* ============================================================
+   TADCU — Episode 4 "The Wall"
+   Production rules unchanged (see Episodes 1-3):
+   - CSS animations only on elements WITHOUT transform attrs,
+     outer <g> position / inner <g> motion, symbols for characters,
+     no CSS inside <use> shadow trees.
+   ============================================================ */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --cream:#f7e9d7; --slate:#5b6670; --brick:#b04a3a;
+  --sheep:#f2ead8; --charcoal:#3a3733; --ink:#2c2a27;
+  --cement:#9aa4a9; --stone:#8d8478; --mud:#4a3b2c;
+}
+
+html,body { height:100%; background:#191d1a; font-family:"Trebuchet MS",Verdana,sans-serif; }
+#theatre { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px; }
+#stage { position:relative; width:min(100%,1600px); aspect-ratio:16/9; background:#20301f; border-radius:14px; overflow:hidden; box-shadow:0 18px 50px rgba(0,0,0,.55); }
+.panel { position:absolute; inset:0; opacity:0; visibility:hidden; }
+.panel.active { opacity:1; visibility:visible; }
+#stage.paused * { animation-play-state:paused !important; }
+svg { display:block; width:100%; height:100%; }
+
+/* ---------- bubbles ---------- */
+.bubble {
+  position:absolute; max-width:34%; background:#fffdf6; color:var(--ink);
+  border:3px solid var(--ink); border-radius:16px; padding:10px 14px;
+  font-family:"Comic Sans MS","Segoe Print","Bradley Hand",cursive;
+  font-size:clamp(10px,1.35vw,21px); line-height:1.25; z-index:6; opacity:0;
+  animation:bubbleShow var(--dur,4s) ease var(--d,0s) both;
+  box-shadow:3px 4px 0 rgba(0,0,0,.18);
+}
+.bubble::after { content:""; position:absolute; left:22%; bottom:-14px; border:7px solid transparent; border-top-color:var(--ink); }
+.bubble i { opacity:.6; font-size:.85em; }
+@keyframes bubbleShow {
+  0%   { opacity:0; transform:scale(.5); }
+  8%   { opacity:1; transform:scale(1.06); }
+  13%  { transform:scale(1); }
+  86%  { opacity:1; transform:scale(1); }
+  100% { opacity:0; transform:scale(.92); }
+}
+
+/* ---------- scenery ---------- */
+.cloud { fill:#fff; opacity:.85; }
+.drift { animation:drift 26s linear infinite; }
+.drift gloomy { }
+@keyframes drift { from{transform:translateX(-260px);} to{transform:translateX(1800px);} }
+.greyCloud { fill:#b6bfae; opacity:.9; }
+
+.rain { stroke:#c7d8e6; stroke-width:5; stroke-linecap:round; }
+.rainFall { animation:rainFall .55s linear infinite; }
+@keyframes rainFall { from{transform:translateY(-60px);} to{transform:translateY(60px);} }
+
+.curl { animation:curl 5s linear infinite; opacity:0; }
+.curl.b{ animation-delay:-1.7s; } .curl.c{ animation-delay:-3.4s; }
+@keyframes curl {
+  0%{ transform:translate(0,0) scale(.4); opacity:0; }
+  18%{ opacity:.8; }
+  100%{ transform:translate(20px,-80px) scale(1.4); opacity:0; }
+}
+
+/* ---------- characters ---------- */
+.bob   { animation:bob .7s ease-in-out infinite alternate; }
+.bob.b { animation-delay:-.25s; } .bob.c{ animation-delay:-.5s; } .bob.d{ animation-delay:-.12s; }
+@keyframes bob { from{transform:translateY(0);} to{transform:translateY(-9px);} }
+.hopHi { animation:hopHi .45s ease-in-out infinite alternate; }
+.hopHi.b{ animation-delay:-.2s; } .hopHi.c{ animation-delay:-.35s; }
+@keyframes hopHi  { from{transform:translateY(0);} to{transform:translateY(-24px);} }
+
+.wag  { animation:wag .5s ease-in-out infinite alternate; transform-origin:10px 34px; }
+@keyframes wag { from{transform:rotate(-16deg);} to{transform:rotate(18deg);} }
+.earPerk { animation:earPerk .7s ease var(--d,0s) both; transform-origin:96px 20px; }
+@keyframes earPerk { 0%,40%{transform:rotate(0);} 60%{transform:rotate(-13deg);} 100%{transform:rotate(0);} }
+.headShake { animation:headShake .9s ease var(--d,0s) both; transform-origin:98px 40px; }
+@keyframes headShake { 0%,20%{transform:rotate(0);} 30%{transform:rotate(6deg);} 42%{transform:rotate(-6deg);} 54%{transform:rotate(4deg);} 66%,100%{transform:rotate(0);} }
+
+.strollIn { animation:strollIn 5.5s ease-in-out .6s both; }
+@keyframes strollIn { from{transform:translate(-240px,560px) scale(1.15);} to{transform:translate(360px,560px) scale(1.15);} }
+.walkL { animation:walkL var(--dur,8s) linear var(--d,0s) both; }
+@keyframes walkL { from{transform:translateX(0);} to{transform:translateX(var(--dx,-1200px));} }
+
+.tadBob { animation:tadBob .55s ease-in-out infinite alternate; }
+@keyframes tadBob { from{transform:translateY(0) rotate(0deg);} to{transform:translateY(-7px) rotate(-2deg);} }
+.capTip { animation:capTip 4s ease 1s both; transform-origin:96px 40px; }
+@keyframes capTip { 0%,30%{transform:rotate(0);} 45%{transform:rotate(-8deg) translateY(-3px);} 60%,100%,0%{transform:rotate(0);} }
+
+.trowelHit { animation:trowelHit 2s cubic-bezier(.4,0,.6,1) infinite; transform-origin:96px 120px; }
+@keyframes trowelHit {
+  0%,30% { transform:rotate(0); }
+  40%   { transform:rotate(-26deg) translateY(-6px); }
+  52%   { transform:rotate(-10deg) translateY(2px); }
+  60%,100% { transform:rotate(0); }
+}
+
+/* ---------- cards ---------- */
+.t-main { font-family:"Comic Sans MS","Segoe Print",cursive; font-weight:700; fill:var(--cream); letter-spacing:.06em; }
+.rise { animation:rise 1.5s cubic-bezier(.2,1.35,.4,1) var(--d,0s) both; }
+@keyframes rise { from{opacity:0; transform:translateY(70px);} to{opacity:1; transform:translateY(0);} }
+.pop  { animation:pop 1s cubic-bezier(.2,1.6,.4,1) var(--d,0s) both; }
+@keyframes pop { from{opacity:0; transform:scale(.3);} to{opacity:1; transform:scale(1);} }
+
+/* ---------- subtitle & controls ---------- */
+#subBar { position:absolute; left:4%; right:4%; bottom:8.5%; z-index:8; text-align:center; pointer-events:none; }
+#sub { display:inline-block; max-width:88%; background:rgba(18,22,18,.85); color:#fff; padding:8px 16px; border-radius:10px; font-size:clamp(11px,1.6vw,22px); line-height:1.3; font-family:"Comic Sans MS","Segoe Print",cursive; }
+#sub:empty { opacity:0; }
+#sub .who { color:#ffd28a; font-weight:700; margin-right:.45em; text-transform:uppercase; font-size:.78em; letter-spacing:.1em; }
+#ui { width:min(100%,1600px); margin-top:10px; display:grid; grid-template-columns:auto auto 1fr auto auto; gap:10px; align-items:center; color:#cfd8cf; font-size:13px; }
+#ui button { background:#2c342c; color:#e8eee6; border:1px solid #465046; border-radius:8px; width:46px; height:34px; cursor:pointer; font-size:14px; }
+#ui button:hover { background:#39503a; }
+#bar { height:10px; background:#2c342c; border-radius:6px; overflow:hidden; cursor:pointer; }
+#fill { height:100%; width:0%; background:linear-gradient(90deg,#67a568,#b04a3a); }
+#lbl { min-width:250px; text-align:right; opacity:.85; white-space:nowrap; }
+#hint { color:#9aa79a; font-size:12px; margin-top:6px; }
+</style>
+</head>
+<body>
+<div id="theatre">
+  <div id="stage">
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <g id="sheep-shape">
+          <rect x="24" y="42" width="7" height="20" rx="3" fill="#3a3733"/>
+          <rect x="36" y="44" width="7" height="18" rx="3" fill="#3a3733"/>
+          <rect x="60" y="44" width="7" height="18" rx="3" fill="#3a3733"/>
+          <rect x="71" y="42" width="7" height="20" rx="3" fill="#3a3733"/>
+          <ellipse cx="51" cy="33" rx="33" ry="18" fill="#f2ead8"/>
+          <circle cx="26" cy="22" r="9" fill="#f2ead8"/><circle cx="42" cy="16" r="10" fill="#f2ead8"/>
+          <circle cx="58" cy="16" r="10" fill="#f2ead8"/><circle cx="74" cy="22" r="9" fill="#f2ead8"/>
+          <ellipse cx="86" cy="26" rx="10" ry="8.5" fill="#3a3733"/>
+          <path d="M80 18 q-7 -8 -12 -2" stroke="#3a3733" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="89" cy="24" r="2.1" fill="#fff"/><circle cx="89" cy="24" r="1" fill="#000"/>
+          <circle cx="17" cy="27" r="4.5" fill="#e4dccb"/>
+        </g>
+        <g id="sheep-dott">
+          <rect x="24" y="42" width="7" height="20" rx="3" fill="#3a3733"/>
+          <rect x="36" y="44" width="7" height="18" rx="3" fill="#3a3733"/>
+          <rect x="60" y="44" width="7" height="18" rx="3" fill="#3a3733"/>
+          <rect x="71" y="42" width="7" height="20" rx="3" fill="#3a3733"/>
+          <ellipse cx="51" cy="33" rx="33" ry="18" fill="#f2ead8"/>
+          <circle cx="36" cy="30" r="6" fill="#3a3733" opacity=".8"/>
+          <circle cx="60" cy="40" r="5" fill="#3a3733" opacity=".8"/>
+          <circle cx="70" cy="24" r="4.5" fill="#3a3733" opacity=".8"/>
+          <circle cx="44" cy="20" r="5" fill="#3a3733" opacity=".8"/>
+          <ellipse cx="86" cy="26" rx="10" ry="8.5" fill="#3a3733"/>
+          <path d="M80 18 q-7 -8 -12 -2" stroke="#3a3733" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <g id="tadcu">
+          <rect x="46" y="150" width="13" height="40" rx="5" fill="#5b6670"/>
+          <rect x="67" y="150" width="13" height="40" rx="5" fill="#5b6670"/>
+          <ellipse cx="50" cy="192" rx="12" ry="7" fill="#2c2a27"/>
+          <ellipse cx="77" cy="192" rx="12" ry="7" fill="#2c2a27"/>
+          <path d="M35 72 q0 -28 30 -28 q30 0 30 28 v82 q0 10 -12 10 h-36 q-12 0 -12 -10 z" fill="#b04a3a"/>
+          <rect x="48" y="106" width="34" height="9" rx="3" fill="#8d3a2d"/>
+          <circle cx="64" cy="126" r="4" fill="#8d3a2d"/><circle cx="64" cy="140" r="4" fill="#8d3a2d"/>
+          <path d="M38 84 q-18 22 -22 50" stroke="#c96a55" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <path d="M18 136 l-22 48" stroke="#7a5230" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="-5" cy="182" r="6" fill="#e9c39a"/>
+          <circle cx="98" cy="46" r="27" fill="#eebd93"/>
+          <path d="M72 44 q0 40 26 40 q26 0 26 -40 q-13 12 -26 12 q-13 0 -26 -12 z" fill="#d8d5d1"/>
+          <path d="M87 55 q11 -9 22 0 q-11 9 -22 0 z" fill="#e4e1de"/>
+          <circle cx="85" cy="47" r="3.4" fill="#2c2a27"/><circle cx="111" cy="47" r="3.4" fill="#2c2a27"/>
+          <path d="M96 48 l6 6 l-12 0 q0 6 3 8" stroke="#e5956f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="76" cy="52" r="6" fill="#e5956f" opacity=".45"/>
+          <circle cx="120" cy="52" r="6" fill="#e5956f" opacity=".45"/>
+          <path d="M70 38 q0 -30 28 -30 q28 0 28 30 q-14 -9 -28 -9 q-14 0 -28 9 z" fill="#b04a3a"/>
+          <rect x="66" y="38" width="64" height="9" rx="4" fill="#8d3a2d"/>
+          <g>
+            <path d="M82 86 q22 18 28 32" stroke="#c96a55" stroke-width="11" fill="none" stroke-linecap="round"/>
+            <circle cx="111" cy="120" r="7" fill="#e9c39a"/>
+            <rect x="102" y="104" width="20" height="16" rx="3" fill="#e8e8e8"/>
+            <path d="M122 108 q9 4 0 10" stroke="#e8e8e8" stroke-width="4" fill="none"/>
+            <circle cx="112" cy="100" r="2.5" fill="#b8cfe2"/>
+          </g>
+        </g>
+
+        <g id="bryn">
+          <ellipse cx="54" cy="42" rx="36" ry="15" fill="#2c2a27"/>
+          <ellipse cx="48" cy="52" rx="18" ry="8" fill="#f2ead8"/>
+          <rect x="32" y="50" width="7" height="13" rx="3" fill="#2c2a27"/>
+          <rect x="46" y="52" width="7" height="11" rx="3" fill="#2c2a27"/>
+          <rect x="60" y="52" width="7" height="11" rx="3" fill="#2c2a27"/>
+          <rect x="70" y="50" width="7" height="13" rx="3" fill="#2c2a27"/>
+        </g>
+        <g id="bryn-tail">
+          <path d="M10 38 q-12 -2 -14 -14" stroke="#2c2a27" stroke-width="8" fill="none" stroke-linecap="round"/>
+        </g>
+        <g id="bryn-head">
+          <path d="M76 24 q13 -9 22 1 q7 8 3 17 q-4 9 -15 9 l-14 -2 z" fill="#2c2a27"/>
+          <path d="M80 28 q11 -5 15 4 q-9 9 -16 2 z" fill="#f2ead8"/>
+          <path d="M86 44 q5 6 13 4" stroke="#e58a97" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="91" cy="23" r="2.4" fill="#fff"/>
+          <path d="M95 13 l7 -12" stroke="#2c2a27" stroke-width="6" stroke-linecap="round"/>
+        </g>
+
+        <g id="pawp">
+          <ellipse cx="0" cy="0" rx="15" ry="12" fill="#2c2a27"/>
+          <ellipse cx="-16" cy="-14" rx="5.5" ry="7" fill="#2c2a27"/>
+          <ellipse cx="-6" cy="-19" rx="5.5" ry="7" fill="#2c2a27"/>
+          <ellipse cx="6" cy="-19" rx="5.5" ry="7" fill="#2c2a27"/>
+          <ellipse cx="16" cy="-14" rx="5.5" ry="7" fill="#2c2a27"/>
+        </g>
+
+        <g id="cottage">
+          <rect x="20" y="62" width="140" height="80" fill="#cfc9bd"/>
+          <path d="M10 66 L90 18 L170 66 z" fill="#5b6670"/>
+          <rect x="120" y="24" width="16" height="34" fill="#8d8478"/>
+          <rect x="40" y="92" width="30" height="50" fill="#b04a3a"/>
+          <circle cx="63" cy="117" r="3" fill="#f7e9d7"/>
+          <rect x="95" y="86" width="26" height="26" fill="#7fa7b8"/>
+          <path d="M95 86 h26 v26 h-26 z M94 99 h28 M108 86 v26" stroke="#5b6670" stroke-width="3" fill="none"/>
+        </g>
+
+        <g id="gate">
+          <rect x="0" y="-6" width="10" height="96" fill="#7a5230"/>
+          <rect x="90" y="-6" width="10" height="96" fill="#7a5230"/>
+          <rect x="2" y="8" width="96" height="8" fill="#a9803f"/>
+          <rect x="2" y="34" width="96" height="8" fill="#a9803f"/>
+          <rect x="2" y="60" width="96" height="8" fill="#a9803f"/>
+        </g>
+
+        <g id="leek">
+          <ellipse cx="0" cy="0" rx="16" ry="6" fill="#8fb47a"/>
+          <path d="M-2 -2 L6 -34" stroke="#7fa7b8" stroke-width="5"/>
+          <path d="M-2 -2 L14 -30" stroke="#a9c79b" stroke-width="5"/>
+          <path d="M0 -2 L18 -26" stroke="#8fb47a" stroke-width="5"/>
+        </g>
+
+        <!-- brick wall segment, staggered courses -->
+        <g id="wallBlock">
+          <rect x="0" y="0" width="120" height="34" rx="6" fill="#8d8478"/>
+          <rect x="0" y="0" width="120" height="34" rx="6" fill="none" stroke="#5b6670" stroke-width="4"/>
+        </g>
+        <!-- cement bag -->
+        <g id="cement-bag">
+          <path d="M0 0 q-8 -66 40 -66 q48 0 40 66 q-40 12 -80 0z" fill="#9aa4a9"/>
+          <rect x="18" y="-52" width="44" height="14" rx="3" fill="#b04a3a"/>
+          <path d="M10 -20 h60 M10 -8 h60" stroke="#7d868b" stroke-width="4"/>
+        </g>
+        <!-- wheelbarrow -->
+        <g id="wheelbarrow">
+          <path d="M0 20 h190 l26 40 h-226 z" fill="#7a5230"/>
+          <circle cx="30" cy="80" r="20" fill="#2c2a27"/>
+          <circle cx="160" cy="80" r="20" fill="#2c2a27"/>
+          <path d="M190 22 l40 -18" stroke="#5b6670" stroke-width="10" stroke-linecap="round"/>
+        </g>
+        <!-- trowel -->
+        <g id="trowel">
+          <path d="M0 0 l26 26" stroke="#7a5230" stroke-width="7" stroke-linecap="round"/>
+          <path d="M24 24 q14 -12 30 4 q-12 16 -30 4 q-6 -6 0 -8z" fill="#a9b0ad"/>
+        </g>
+        <!-- chisel -->
+        <g id="chisel">
+          <path d="M0 34 v-22" stroke="#5b6670" stroke-width="8" stroke-linecap="round"/>
+          <path d="M0 12 l8 -12 l-16 0 z" fill="#a9b0ad"/>
+        </g>
+      </defs>
+    </svg>
+
+    <!-- ================= TITLE CARD ================= -->
+    <section class="panel" id="p-title">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <defs><linearGradient id="dawn4" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f5b26b"/><stop offset=".6" stop-color="#e58f6a"/><stop offset="1" stop-color="#7d5f74"/>
+        </linearGradient></defs>
+        <rect width="1600" height="900" fill="url(#dawn4)"/>
+        <circle cx="1120" cy="620" r="120" fill="#ffe9a8"/>
+        <path d="M0 640 Q400 480 800 660 T1600 600 V900 H0 z" fill="#5d5468"/>
+        <path d="M0 700 Q500 560 1000 740 Q1300 830 1600 760 V900 H0 z" fill="#3f4a45"/>
+        <use href="#sheep-shape" x="220" y="700"/>
+        <use href="#sheep-shape" x="360" y="742"/>
+        <text class="t-main rise" x="800" y="380" font-size="200" text-anchor="middle">TADCU</text>
+        <text class="t-main rise" style="--d:.9s; fill:#2c2a27" x="800" y="470" font-size="44" text-anchor="middle">in  “The Wall”</text>
+        <text class="t-main pop" style="--d:2.1s; fill:#fff3d6" x="800" y="560" font-size="40" text-anchor="middle">Y Mur!</text>
+      </svg>
+      <div class="bubble" style="--d:.5s; left:39%; top:8%; max-width:24%;">
+        Ep. 4 · production run “test04” · Cwm Twp production unit
+      </div>
+    </section>
+
+    <!-- ============ SCENE 1 : WORKING DAY ============ -->
+    <section class="panel" id="p-s1">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <rect width="1600" height="900" fill="#a9d7e8"/>
+        <circle cx="240" cy="140" r="64" fill="#ffdf8e"/>
+        <path d="M0 560 Q420 420 860 590 T1600 540 V900 H0 z" fill="#67a568"/>
+        <path d="M0 640 Q520 500 1060 680 Q1360 770 1600 700 V900 H0 z" fill="#4a8a52"/>
+        <path d="M0 740 Q600 640 1600 720 V900 H0 z" fill="#2f6a3c"/>
+        <path d="M0 800 Q500 740 1600 780 V900 H0 z" fill="#4a3b2c"/>
+        <!-- tools laid out -->
+        <g class="walkL" style="--dur:12s; --dx:-1460px">
+          <g transform="translate(1560,640) scale(1.1)"><use href="#wheelbarrow"/></g>
+        </g>
+        <g transform="translate(430,650) scale(1)"><use href="#cement-bag"/></g>
+        <g transform="translate(352,644) scale(1)"><use href="#cement-bag"/></g>
+        <g transform="translate(120,660) scale(1.1)"><use href="#sheep-shape"/></g>
+        <!-- the girls: one suspicious field away -->
+        <g transform="translate(1250,540) scale(.95)"><g class="bob c"><use href="#sheep-shape"/></g></g>
+        <g transform="translate(1390,510) scale(.95)"><g class="bob b"><use href="#sheep-shape"/></g></g>
+        <g transform="translate(1470,560) scale(.9)"><g class="bob"><use href="#sheep-dott"/></g></g>
+        <g transform="translate(1500,600) scale(.95)"><g class="bob d"><use href="#sheep-shape"/></g></g>
+        <!-- Bryn, holding the string, supervising -->
+        <g transform="translate(600,610)">
+          <g class="earPerk" style="--d:9.4s"><use href="#bryn"/><use href="#bryn-head"/></g>
+          <use class="wag" href="#bryn-tail"/>
+        </g>
+        <path d="M560 610 L300 566" stroke="#b04a3a" stroke-width="5" stroke-dasharray="4 12"/>
+        <!-- the old broken wall, for context -->
+        <g transform="translate(150,470)">
+          <g transform="translate(0,120)"><use href="#wallBlock"/></g>
+          <g transform="translate(64,86)"><use href="#wallBlock"/></g>
+          <g transform="translate(20,52)"><use href="#wallBlock"/></g>
+        </g>
+        <!-- Tadcu -->
+        <g transform="translate(480,290) scale(1.5)">
+          <g class="capTip"><g class="tadBob" style="animation:none"><use href="#tadcu"/></g></g>
+        </g>
+        <g transform="translate(560,500)"><use href="#trowel" transform="scale(1)"/></g>
+      </svg>
+      <div class="bubble" style="--d:.8s; --dur:3.8s; left:44%; top:6%;"><b>Narrator</b>&nbsp;Summer found Tadcu with a plan, a wheelbarrow, and a wall’s worth of ambition.</div>
+      <div class="bubble" style="--d:5s; --dur:3.6s; left:8%; top:40%;"><b>Tadcu</b>&nbsp;One wall, girls. This wall here. It goes up, you stay in, everybody’s happy.</div>
+      <div class="bubble" style="--d:9.2s; --dur:2.6s; left:60%; top:34%;"><b>Narrator</b>&nbsp;The girls nodded. Sheep nod like that.</div>
+      <div class="bubble" style="--d:11.6s; --dur:2.4s; left:26%; top:66%;"><b>Bryn</b>&nbsp;<i>(holds the string. supervises.)</i></div>
+    </section>
+
+    <!-- ============ SCENE 2 : THE WALL ============ -->
+    <section class="panel" id="p-s2">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <rect width="1600" height="900" fill="#a9d7e8"/>
+        <circle cx="1380" cy="150" r="70" fill="#ffdf8e"/>
+        <path d="M0 620 Q800 500 1600 600 V900 H0 z" fill="#4a8a52"/>
+        <path d="M0 720 Q800 640 1600 700 V900 H0 z" fill="#2f6a3c"/>
+        <path d="M0 810 Q800 760 1600 800 V900 H0 z" fill="#4a3b2c"/>
+        <g class="drift"><circle class="cloud" cx="300" cy="140" r="30"/><circle class="cloud" cx="350" cy="150" r="40"/><circle class="cloud" cx="260" cy="146" r="26"/></g>
+        <!-- the new wall, going up proudly -->
+        <g transform="translate(180,300)">
+          <g transform="translate(0,300)"><use href="#wallBlock"/></g>
+          <g transform="translate(62,266)"><use href="#wallBlock"/></g>
+          <g transform="translate(6,232)"><use href="#wallBlock"/></g>
+          <g transform="translate(70,198)"><use href="#wallBlock"/></g>
+          <g transform="translate(12,164)"><use href="#wallBlock"/></g>
+          <!-- paw prints of the supervising artist -->
+          <g transform="translate(70,318) scale(.8)"><use href="#pawp" opacity=".9"/></g>
+          <g transform="translate(120,280) scale(.75) rotate(-12)"><use href="#pawp" opacity=".85"/></g>
+        </g>
+        <!-- wheelbarrow parked -->
+        <g transform="translate(700,770) scale(1.05)"><use href="#wheelbarrow"/></g>
+        <!-- Tadcu at the wall, mid-trowel -->
+        <g transform="translate(520,270) scale(1.5)">
+          <g class="trowelHit">
+            <g class="tadBob" style="animation:none"><use href="#tadcu"/></g>
+          </g>
+        </g>
+        <g transform="translate(700,380) scale(1.2)"><use href="#trowel"/></g>
+        <!-- Bryn inspecting the wet course -->
+        <g transform="translate(360,760)">
+          <g class="earPerk" style="--d:11s"><use href="#bryn"/><use href="#bryn-head"/></g>
+          <use class="wag" href="#bryn-tail"/>
+        </g>
+        <!-- the girls, applauding from one suspicious field -->
+        <g transform="translate(1290,600) scale(.9)"><g class="bob c"><use href="#sheep-shape"/></g></g>
+        <g transform="translate(1420,580) scale(.9)"><g class="bob b"><use href="#sheep-shape"/></g></g>
+        <g transform="translate(1500,640) scale(.86)"><g class="bob"><use href="#sheep-dott"/></g></g>
+      </svg>
+      <div class="bubble" style="--d:1s; --dur:4s; left:8%; top:32%;"><b>Tadcu</b>&nbsp;Cement on, stone on, trowel OFF — and mind the gate, that’s the vital part.</div>
+      <div class="bubble" style="--d:5.4s; --dur:3s; left:56%; top:44%;"><b>Narrator</b>&nbsp;The girls applauded, from a distance of one suspicious field.</div>
+      <div class="bubble" style="--d:9s; --dur:3.2s; left:8%; top:60%;"><b>Tadcu</b>&nbsp;Bryn — PAW PRINTS. All over the fresh course!</div>
+      <div class="bubble" style="--d:12.4s; --dur:2.6s; left:46%; top:6%;"><b>Narrator</b>&nbsp;Decorative, said Bryn. Load-bearing, said Dilys’s county cousin.</div>
+    </section>
+
+    <!-- ============ SCENE 3 : THE RAIN ============ -->
+    <section class="panel" id="p-s3">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <rect width="1600" height="900" fill="#7d8ea0"/>
+        <path d="M0 620 Q800 500 1600 600 V900 H0 z" fill="#3d5c48"/>
+        <path d="M0 720 Q800 640 1600 700 V900 H0 z" fill="#2f4a3c"/>
+        <path d="M0 810 Q800 760 1600 800 V900 H0 z" fill="#3a352c"/>
+        <!-- grey clouds rolling -->
+        <g class="drift" style="animation-duration:30s"><circle class="greyCloud" cx="300" cy="120" r="42"/><circle class="greyCloud" cx="360" cy="132" r="52"/><circle class="greyCloud" cx="250" cy="130" r="36"/></g>
+        <g class="drift" style="animation-delay:-12s; animation-duration:34s"><circle class="greyCloud" cx="900" cy="90" r="40"/><circle class="greyCloud" cx="960" cy="104" r="48"/><circle class="greyCloud" cx="850" cy="100" r="34"/></g>
+        <!-- the rain -->
+        <g class="rainFall">
+          <g class="rain">
+            <path d="M100 0 l-12 40 M240 40 l-12 40 M380 -8 l-12 40 M560 50 l-12 40 M700 20 l-12 40 M840 70 l-12 40 M1000 10 l-12 40 M1120 60 l-12 40 M1260 30 l-12 40 M1400 80 l-12 40 M1500 20 l-12 40 M320 90 l-12 40 M460 -30 l-12 40 M640 -20 l-12 40 M920 -15 l-12 40 M1080 -25 l-12 40 M1320 -10 l-12 40 M1460 55 l-12 40"/>
+          </g>
+        </g>
+        <!-- the wall, going grey -->
+        <g transform="translate(180,300)">
+          <g transform="translate(0,300)"><use href="#wallBlock"/></g>
+          <g transform="translate(62,266)"><use href="#wallBlock"/></g>
+          <g transform="translate(6,232)"><use href="#wallBlock"/></g>
+          <g transform="translate(70,198)"><use href="#wallBlock"/></g>
+          <g transform="translate(12,164)"><use href="#wallBlock"/></g>
+          <g transform="translate(70,318) scale(.8)"><use href="#pawp" opacity=".7"/></g>
+          <g transform="translate(120,280) scale(.7) rotate(-12)"><use href="#pawp" opacity=".65"/></g>
+        </g>
+        <!-- buckets catching drips -->
+        <rect x="660" y="760" width="70" height="60" rx="6" fill="#5b6670"/>
+        <rect x="672" y="752" width="46" height="10" rx="4" fill="#465046"/>
+        <rect x="770" y="790" width="70" height="52" rx="6" fill="#5b6670"/>
+        <!-- water blips -->
+        <g class="bob" transform="translate(695,806)"><ellipse cx="0" cy="0" rx="20" ry="5" fill="#9fb6c9" opacity=".8"/></g>
+        <g class="bob b" transform="translate(805,836)"><ellipse cx="0" cy="0" rx="18" ry="4" fill="#9fb6c9" opacity=".7"/></g>
+        <!-- Tadcu, soaked, holding a bucket -->
+        <g transform="translate(300,250) scale(1.55)">
+          <g class="headShake" style="--d:2s">
+            <g class="tadBob" style="animation:none">
+              <use href="#tadcu"/>
+              <rect x="66" y="118" width="52" height="42" rx="6" fill="#5b6670"/>
+            </g>
+          </g>
+        </g>
+        <!-- Bryn under the wheelbarrow, dry and wise -->
+        <g transform="translate(1020,770) scale(1)"><use href="#wheelbarrow"/></g>
+        <g transform="translate(1120,742)">
+          <g class="earPerk" style="--d:3s"><use href="#bryn"/><use href="#bryn-head"/></g>
+          <use class="wag" href="#bryn-tail"/>
+        </g>
+      </svg>
+      <div class="bubble" style="--d:.8s; --dur:3.2s; left:8%; top:6%;"><b>Narrator</b>&nbsp;The sky, for comic effect, opened at half two.</div>
+      <div class="bubble" style="--d:4.2s; --dur:3.4s; left:4%; top:56%;"><b>Tadcu</b>&nbsp;Rain? NOW? The wall won’t SET — the buckets, quick!</div>
+      <div class="bubble" style="--d:8.4s; --dur:3.4s; left:44%; top:8%;"><b>Narrator</b>&nbsp;Buckets brought, drips caught, words said that do not appear in tutorials.</div>
+      <div class="bubble" style="--d:11.4s; --dur:3s; left:40%; top:58%;"><b>Tadcu</b>&nbsp;It’s a shade of grey now. A bit... soggy-artistic.</div>
+    </section>
+
+    <!-- ============ SCENE 4 : THE GATE ============ -->
+    <section class="panel" id="p-s4">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <rect width="1600" height="900" fill="#a9d7e8"/>
+        <circle cx="1380" cy="140" r="64" fill="#ffdf8e"/>
+        <path d="M0 620 Q800 500 1600 600 V900 H0 z" fill="#67a568"/>
+        <path d="M0 730 Q800 660 1600 710 V900 H0 z" fill="#2f6a3c"/>
+        <path d="M0 820 Q800 780 1600 810 V900 H0 z" fill="#4a3b2c"/>
+        <g class="drift" style="animation-delay:-6s"><circle class="cloud" cx="700" cy="130" r="28"/><circle class="cloud" cx="744" cy="142" r="36"/><circle class="cloud" cx="660" cy="138" r="24"/></g>
+        <!-- the finished wall: a beauty, with the gate SEALED inside -->
+        <g transform="translate(200,240)">
+          <g transform="translate(0,440)"><use href="#wallBlock"/></g>
+          <g transform="translate(62,406)"><use href="#wallBlock"/></g>
+          <g transform="translate(6,372)"><use href="#wallBlock"/></g>
+          <g transform="translate(70,338)"><use href="#wallBlock"/></g>
+          <g transform="translate(12,304)"><use href="#wallBlock"/></g>
+          <g transform="translate(64,270)"><use href="#wallBlock"/></g>
+          <g transform="translate(0,236)"><use href="#wallBlock"/></g>
+          <g transform="translate(60,202)"><use href="#wallBlock"/></g>
+          <!-- the gate's posts, poking out of the courses like a tells -->
+          <rect x="150" y="240" width="16" height="230" fill="#7a5230"/>
+          <!-- the invisible gate bars, locked in stone -->
+          <rect x="150" y="290" width="0" height="0" fill="none"/>
+          <!-- paw prints, now certified structural -->
+          <g transform="translate(70,458) scale(.8)"><use href="#pawp" opacity=".9"/></g>
+          <g transform="translate(120,420) scale(.75) rotate(-12)"><use href="#pawp" opacity=".9"/></g>
+          <g transform="translate(30,342) scale(.7) rotate(9)"><use href="#pawp" opacity=".85"/></g>
+        </g>
+        <!-- Tadcu on the RIGHT side of his own wall (locked out) -->
+        <g transform="translate(1240,250) scale(1.55)">
+          <g class="headShake" style="--d:5s">
+            <g class="tadBob" style="animation:none"><use href="#tadcu"/></g>
+          </g>
+        </g>
+        <!-- Bryn arrives ON his side with the chisel -->
+        <g class="walkL" style="--dur:4s; --dx:-640px" transform2="">
+          <g transform="translate(1720,760) scale(1.15)">
+            <g class="earPerk" style="--d:1s"><use href="#bryn"/><use href="#bryn-head"/></g>
+            <use class="wag" href="#bryn-tail"/>
+          </g>
+        </g>
+        <!-- the chisel laid out, ready for lessons -->
+        <g transform="translate(1000,810) scale(1.3)"><use href="#chisel"/></g>
+      </svg>
+      <div class="bubble" style="--d:.8s; --dur:3.2s; left:54%; top:8%;"><b>Narrator</b>&nbsp;The wall stood firm. The wall, in fact, was a beauty.</div>
+      <div class="bubble" style="--d:4.4s; --dur:3.2s; left:56%; top:40%;"><b>Tadcu</b>&nbsp;So good the girls can’t get OUT. ...Bryn. WHERE’S the gate?</div>
+      <div class="bubble" style="--d:8s; --dur:3.8s; left:8%; top:24%;"><b>Narrator</b>&nbsp;INSIDE the wall. The gate was inside the wall.</div>
+      <div class="bubble" style="--d:11.4s; --dur:2.6s; left:56%; top:60%;"><b>Tadcu</b>&nbsp;I can’t get IN, Bryn. I’m locked out of my own field.</div>
+      <div class="bubble" style="--d:13.6s; --dur:2.4s; left:20%; top:66%;"><b>Bryn</b>&nbsp;<i>(brings the chisel. professional.)</i></div>
+    </section>
+
+    <!-- ============ SCENE 5 : HOME ============ -->
+    <section class="panel" id="p-s5">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <defs><linearGradient id="dusk4" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ee9b6f"/><stop offset=".7" stop-color="#6d5a72"/><stop offset="1" stop-color="#41505a"/>
+        </linearGradient></defs>
+        <rect width="1600" height="900" fill="url(#dusk4)"/>
+        <path d="M0 520 Q500 380 1000 540 Q1320 630 1600 560 V900 H0 z" fill="#3f5a48"/>
+        <path d="M0 660 Q700 560 1600 640 V900 H0 z" fill="#31503e"/>
+        <use href="#cottage" x="120" y="340"/>
+        <rect x="215" y="400" width="26" height="22" fill="#ffd98a" opacity=".9"/>
+        <!-- the finished wall + paw prints in the dusk -->
+        <g transform="translate(760,420)">
+          <g transform="translate(0,240)"><use href="#wallBlock"/></g>
+          <g transform="translate(62,206)"><use href="#wallBlock"/></g>
+          <g transform="translate(6,172)"><use href="#wallBlock"/></g>
+          <g transform="translate(70,138)"><use href="#wallBlock"/></g>
+          <g transform="translate(30,104) scale(.8)"><use href="#pawp" opacity=".8"/></g>
+        </g>
+        <!-- the gate: back where it belongs, one inch higher -->
+        <g transform="translate(700,560)"><use href="#gate"/></g>
+        <!-- the girls file in -->
+        <g class="walkL" style="--d:1.2s; --dur:4s; --dx:-320px">
+          <g transform="translate(1090,650) scale(.9)"><use href="#sheep-shape"/></g>
+        </g>
+        <g class="walkL" style="--d:2.6s; --dur:4.2s; --dx:-360px">
+          <g transform="translate(1160,600) scale(.9)"><use href="#sheep-dott"/></g>
+        </g>
+        <g class="walkL" style="--d:4s; --dur:4.4s; --dx:-380px">
+          <g transform="translate(1200,680) scale(.9)"><use href="#sheep-shape"/></g>
+        </g>
+        <!-- Tadcu, mug up, at the latched gate -->
+        <g transform="translate(300,380) scale(1.45)">
+          <g class="tadBob" style="animation:none"><use href="#tadcu"/></g>
+        </g>
+        <g transform="translate(180,730) scale(1.1)">
+          <use href="#bryn"/><use href="#bryn-head"/><use class="wag" href="#bryn-tail"/>
+        </g>
+      </svg>
+      <div class="bubble" style="--d:1.4s; --dur:3.6s; left:40%; top:10%;"><b>Narrator</b>&nbsp;At dusk, chisel lessons concluded, the gate came out — one inch higher, very slightly tilted, and entirely its own.</div>
+      <div class="bubble" style="--d:5.6s; --dur:3.2s; left:8%; top:40%;"><b>Tadcu</b>&nbsp;Better. Latched. Every day, mind.</div>
+      <div class="bubble" style="--d:9.2s; --dur:3.4s; left:48%; top:60%;"><b>Narrator</b>&nbsp;And the girls filed in, past the paw-printed wall — into the field that never had a wall before.</div>
+      <div class="bubble" style="--d:12.4s; --dur:3s; left:10%; top:62%;"><b>Tadcu</b>&nbsp;Nos da, chi gyd. The wall did its job: it kept the story out.</div>
+    </section>
+
+    <!-- ================= END CARD ================= -->
+    <section class="panel" id="p-end">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <rect width="1600" height="900" fill="#23281f"/>
+        <text class="t-main pop" x="800" y="360" font-size="130" text-anchor="middle">THE END</text>
+        <text class="t-main rise" style="--d:1s; fill:#8fae8f" x="800" y="150" font-size="44" text-anchor="middle">Cwm Twp production unit · test04</text>
+        <text class="t-main rise" style="--d:1.8s; fill:#cfd8cf" x="800" y="450" font-size="32" text-anchor="middle">Next episode: Cwm Twp goes to the show — and Dott enters</text>
+        <text class="t-main rise" style="--d:2.2s; fill:#cfd8cf" x="800" y="496" font-size="32" text-anchor="middle">herself. Ymlaen!</text>
+        <g transform="translate(660,560) scale(1.4)"><g class="bob"><use href="#sheep-shape"/></g></g>
+        <g transform="translate(880,600) scale(1.3)"><g class="bob b"><use href="#sheep-dott"/></g></g>
+        <text class="t-main pop" style="--d:3s" x="800" y="820" font-size="40" text-anchor="middle">Nos da.</text>
+      </svg>
+    </section>
+
+    <div id="subBar"><div id="sub"></div></div>
+  </div>
+
+  <div id="ui">
+    <button id="bPlay" title="Play / pause">▶</button>
+    <button id="bRestart" title="Restart">⟲</button>
+    <div id="bar"><div id="fill"></div></div>
+    <button id="bSkip" title="Next scene">⏭</button>
+    <span id="lbl">Ready — press play</span>
+  </div>
+  <div id="hint">Keyboard: space = play/pause · → = next scene · 1–7 = jump to a scene · click the bar to scrub by scene.</div>
+</div>
+
+<script>
+/* ================= TIMELINE ================= */
+const SCENES = [
+  { id:"p-title", name:"Title", dur:5.5,
+    subs:[ {t:.8, who:"Tadcu", x:"The wall gets a window for the gate, this time."} ] },
+  { id:"p-s1", name:"Working Day", dur:14,
+    subs:[
+      {t:.6,  who:"Narrator", x:"Summer found Tadcu with a plan, a wheelbarrow, and a wall’s worth of ambition."},
+      {t:4.6, who:"Tadcu",   x:"One wall, girls. This wall here. It goes up, you stay in, everybody’s happy."},
+      {t:9.2, who:"Narrator", x:"The girls nodded. Sheep nod like that."},
+      {t:11.6,who:"Bryn",    x:"(holds the string. supervises.)"} ] },
+  { id:"p-s2", name:"The Wall", dur:15,
+    subs:[
+      {t:1,   who:"Tadcu",   x:"Cement on, stone on, trowel OFF — and mind the gate, that’s the vital part."},
+      {t:5.4, who:"Narrator", x:"The girls applauded, from a distance of one suspicious field."},
+      {t:9,   who:"Tadcu",   x:"Bryn — PAW PRINTS. All over the fresh course!"},
+      {t:12.4,who:"Narrator", x:"Decorative, said Bryn. Load-bearing, said Dilys’s county cousin."} ] },
+  { id:"p-s3", name:"The Rain", dur:14,
+    subs:[
+      {t:.8,  who:"Narrator", x:"The sky, for comic effect, opened at half two."},
+      {t:4.2, who:"Tadcu",   x:"Rain? NOW? The wall won’t SET — the buckets, quick!"},
+      {t:8.4, who:"Narrator", x:"Buckets brought, drips caught, words said that do not appear in tutorials."},
+      {t:11.4,who:"Tadcu",   x:"It’s a shade of grey now. A bit... soggy-artistic."} ] },
+  { id:"p-s4", name:"The Gate", dur:15,
+    subs:[
+      {t:.8,  who:"Narrator", x:"The wall stood firm — a beauty, they said at the post office. So good the girls can’t get OUT."},
+      {t:5.4, who:"Tadcu",   x:"...Bryn. WHERE’S the gate?"},
+      {t:8,   who:"Narrator", x:"INSIDE the wall. The gate was inside the wall."},
+      {t:11.4,who:"Tadcu",   x:"I can’t get IN, Bryn. I’m locked out of my own field!"},
+      {t:13.6,who:"Bryn",    x:"(brings the chisel. professional.)"} ] },
+  { id:"p-s5", name:"Home", dur:13,
+    subs:[
+      {t:1.4, who:"Narrator", x:"At dusk, chisel lessons concluded, the gate came out — one inch higher, very slightly tilted, and entirely its own."},
+      {t:5.6, who:"Tadcu",   x:"Better. Latched. Every day, mind."},
+      {t:9.2, who:"Narrator", x:"And the girls filed in, past the paw-printed wall — into the field that never had a wall before."},
+      {t:12.4,who:"Tadcu",   x:"Nos da, chi gyd. The wall did its job: it kept the story out."} ] },
+  { id:"p-end", name:"The End", dur:6,
+    subs:[ {t:2.2, who:"", x:"Nos da."} ] },
+];
+const TOTAL = SCENES.reduce((a,s)=>a+s.dur,0);
+const STARTS = []; SCENES.reduce((a,s)=>{ STARTS.push(a); return a+s.dur; },0);
+
+let idx=0, tOff=0, playing=false, lastTs=0, lastSub=-99;
+const stage=document.getElementById('stage'),
+      panels=[...document.querySelectorAll('.panel')],
+      sub=document.getElementById('sub'),
+      fill=document.getElementById('fill'),
+      lbl=document.getElementById('lbl'),
+      bPlay=document.getElementById('bPlay');
+
+let actx=null;
+function bloop(f0,f1,dur,type,gain){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain(), n=actx.currentTime;
+    o.type=type||"sine";
+    o.frequency.setValueAtTime(f0,n);
+    o.frequency.exponentialRampToValueAtTime(Math.max(40,f1),n+dur);
+    g.gain.setValueAtTime(gain||.05,n);
+    g.gain.exponentialRampToValueAtTime(.0001,n+dur);
+    o.connect(g); g.connect(actx.destination); o.start(n); o.stop(n+dur+.02);
+  }catch(e){}
+}
+const MUTE=false;
+
+function startScene(i, silent){
+  panels.forEach(p=>p.classList.remove('active'));
+  const p=panels[i];
+  void p.offsetWidth;
+  p.classList.add('active');
+  idx=i; tOff=0; lastSub=-99;
+  sub.textContent='';
+  lbl.textContent=`Scene ${i+1}/${SCENES.length} — ${SCENES[i].name}`;
+  if(!MUTE){ bloop(220,330,.14,"triangle",.05); setTimeout(()=>bloop(330,440,.14,"triangle",.05),150); }
+}
+
+function updateSub(off){
+  const s=SCENES[idx]; let best=null,bi=-1;
+  s.subs.forEach((l,i)=>{ if(off>=l.t){ best=l; bi=i; } });
+  if(bi===lastSub) return;
+  lastSub=bi;
+  if(best){
+    sub.innerHTML = best.who ? `<span class="who">${best.who}</span>${esc(best.x)}` : esc(best.x);
+    bloop(500,760,.09,"square",.025);
+  } else sub.textContent='';
+}
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+function setFill(){
+  const start=idx===0?0:STARTS[idx];
+  fill.style.width=(Math.min(100,(start+tOff)/TOTAL*100)).toFixed(2)+'%';
+}
+
+function tick(ts){
+  if(playing){
+    const dt=Math.min(.05,(ts-lastTs)/1000); lastTs=ts; tOff+=dt;
+    if(tOff>=SCENES[idx].dur){
+      if(idx<SCENES.length-1) startScene(idx+1,false);
+      else { playing=false; bPlay.textContent='▶'; tOff=SCENES[idx].dur; setFill();
+        lbl.textContent='Finished — press play to watch again'; return; }
+    }
+    updateSub(tOff); setFill();
+  }
+  requestAnimationFrame(tick);
+}
+
+function play(){
+  if(playing){ stage.classList.add('paused'); playing=false; bPlay.textContent='▶'; return; }
+  stage.classList.remove('paused'); playing=true; bPlay.textContent='⏸';
+  lastTs=performance.now();
+  if(lbl.textContent.startsWith('Finished')) startScene(0,true);
+  bloop(440,660,.12,"triangle",.04);
+}
+function restart(){ startScene(0,true); stage.classList.remove('paused'); playing=true; bPlay.textContent='⏸'; lastTs=performance.now(); }
+
+bPlay.onclick=play;
+document.getElementById('bRestart').onclick=restart;
+document.getElementById('bSkip').onclick=()=>startScene((idx+1)%SCENES.length,false);
+document.getElementById('bar').onclick=e=>{
+  const r=e.currentTarget.getBoundingClientRect();
+  const pos=(e.clientX-r.left)/r.width*TOTAL;
+  let i=SCENES.length-1; for(let k=0;k<SCENES.length;k++){ if(STARTS[k]<=pos) i=k; }
+  startScene(i,false);
+};
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); play(); }
+  else if(e.key==='ArrowRight') startScene((idx+1)%SCENES.length,false);
+  else if(/^[1-7]$/.test(e.key)) startScene(+e.key-1,false);
+});
+
+panels[0].classList.add('active');
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
